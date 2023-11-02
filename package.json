@@ -1,0 +1,17 @@
+{
+  "name": "string-exporter",
+  "version": "1.0.0",
+  "description": "Export text to string resources",
+  "main": "code.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "watch": "npm run build -- --watch"
+  },
+  "author": "Boris Ho",
+  "repository": "https://github.com/hoboris/string-exporter",
+  "license": "",
+  "devDependencies": {
+    "@figma/plugin-typings": "*",
+    "typescript": "*"
+  }
+}

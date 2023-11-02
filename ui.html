@@ -1,0 +1,466 @@
+<style>
+  body {
+    background-color: var(--figma-color-bg);
+    color: var(--figma-color-text);
+    font-family: "Inter", sans-serif, system-ui;
+    margin: 0;
+  }
+  .section {
+    padding-left: 16;
+    padding-right: 16;
+  }
+  .subSection {
+    margin-top: 4;
+  }
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .outputContainer {
+    display: flex;
+    width: 100%;
+    height: 50%;
+  }
+  h4 {
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+  label {
+    font-size: 11px;
+    font-weight: 400;
+  }
+  .transparentButton {
+    border: none;
+    background-color: transparent;
+    outline: none;
+    opacity: 0.4;
+    color: var(--figma-color-text);
+  }
+  .transparentButton:hover {
+    opacity: 1;
+  }
+  textarea {
+    margin-top: 8;
+    margin-bottom: 8;
+    flex: 1;
+  }
+  hr {
+    opacity: 0.1;
+  }
+</style>
+
+<div class="section">
+  <label><i>Use SHIFT key to select multiple elements</i></label>
+</div>
+
+<hr>
+
+<div class="section">
+  <div class="header">
+    <h4>Layout</h4>
+    <button id="layoutSectionButton" class="transparentButton" onclick="onLayoutSectionToggled()"></button>
+  </div>
+
+  <div id="layoutSection" class="subSection">
+    <div>
+      <input type="checkbox" id="sortAlphabeticallyCheckbox" onchange="onSortAlphabeticallyChange()" checked />
+      <label for="sortAlphabeticallyCheckbox">Sort strings alphabetically</label>
+    </div>
+  
+    <div>
+      <input type="checkbox" id="hideRootDeclarationCheckbox" onchange="onHideRootDeclarationChange()" checked />
+      <label for="hideRootDeclarationCheckbox">Hide output root declaration</label>
+    </div>
+  
+    <div>
+      <input type="text" id="indentationTextField" oninput="onIndentationChange()" value="0" />
+      <label for="indentationTextField">Tab space</label>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<div class="section">
+  <div class="header">
+    <h4>Filter</h4>
+    <button id="filterSectionButton" class="transparentButton" onclick="onFilterSectionToggled()"></button>
+  </div>
+
+  <div id="filterSection" class="subSection">
+    <div>
+      <input type="checkbox" id="hideNonAlphabeticCheckbox" onchange="onHideNonAlphabeticChange()" checked />
+      <label for="hideNonAlphabeticCheckbox">Hide non alphabetic strings</label>
+    </div>
+  
+    <div>
+      <input type="checkbox" id="hideDuplicatesCheckbox" onchange="onHideDuplicatesChange()" checked />
+      <label for="hideDuplicatesCheckbox">Hide duplicates strings</label>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<div class="section">
+  <div class="header">
+    <h4>Keys</h4>
+    <button id="keysSectionButton" class="transparentButton" onclick="onKeysSectionToggled()"></button>
+  </div>
+
+  <div id="keysSection" class="subSection">
+    <div>
+      <label for="useFrameNameCheckbox">Use frame name as key prefix</label>
+      <input type="checkbox" id="useFrameNameCheckbox" onchange="onUseFrameNameChange()" />
+    </div>
+  
+    <div>
+      <label for="prefixTextField">Use custom key prefix</label>
+      <input type="text" id="prefixTextField" oninput="onPrefixChange()" />
+    </div>
+  
+    <div>
+      <label for="suffixTextField">Use first </label>
+      <input type="text" id="suffixTextField" oninput="onSuffixChange()" value="4" />
+      <label for="suffixTextField"> words as key suffix</label>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<div class="section">
+  <div class="header">
+    <h4>Output</h4>
+    <button id="copyButton" onclick="onCopyClick()">Copy</button>
+  </div>
+
+  <div>
+    <div>
+      <label>
+        <input type="radio" name="outputTypeRadioButtons" value="json" onchange="onOutputTypeChange()" checked />
+        .json
+      </label>
+      <label>
+        <input type="radio" name="outputTypeRadioButtons" value="xml" onchange="onOutputTypeChange()" />
+        .xml
+      </label>
+      <label>
+        <input type="radio" name="outputTypeRadioButtons" value="strings" onchange="onOutputTypeChange()" />
+        .strings
+      </label>
+      <label>
+        <input type="radio" name="outputTypeRadioButtons" value="properties" onchange="onOutputTypeChange()" />
+        .properties
+      </label>
+      <label>
+        <input type="radio" name="outputTypeRadioButtons" value="custom" onchange="onOutputTypeChange()" />
+        custom
+      </label>
+    </div>
+    <div id="customOutputSection">
+      <div>
+        <label for="customOutputTextField"><i>Input custom output format and insert %key% and %value% to replace placeholders with the string key and value</i></label>
+      </div>
+      <div>
+        <input type="text" id="customOutputTextField" placeholder='%key% = "%value%"' oninput="onCustomOutputChange()" />
+      </div>
+    </div>
+  </div>
+
+  <div class="outputContainer">
+    <textarea id="outputTextArea" style="white-space: pre-line;"></textarea>
+  </div>
+</div>
+
+<script>
+  const sortAlphabeticallyCheckbox = document.getElementById("sortAlphabeticallyCheckbox");
+  const hideRootDeclarationCheckbox = document.getElementById("hideRootDeclarationCheckbox");
+  const hideNonAlphabeticCheckbox = document.getElementById("hideNonAlphabeticCheckbox");
+  const hideDuplicatesCheckbox = document.getElementById("hideDuplicatesCheckbox");
+  const useFrameNameCheckbox = document.getElementById("useFrameNameCheckbox");
+  const indentationTextField = document.getElementById("indentationTextField");
+  const prefixTextField = document.getElementById("prefixTextField");
+  const suffixTextField = document.getElementById("suffixTextField");
+  const customOutputTextField = document.getElementById("customOutputTextField");
+  const outputTextArea = document.getElementById("outputTextArea");
+  const layoutSection = document.getElementById("layoutSection");
+  const filterSection = document.getElementById("filterSection");
+  const keysSection = document.getElementById("keysSection");
+  const customOutputSection = document.getElementById("customOutputSection");
+  const layoutSectionButton = document.getElementById("layoutSectionButton");
+  const filterSectionButton = document.getElementById("filterSectionButton");
+  const keysSectionButton = document.getElementById("keysSectionButton");
+  const copyButton = document.getElementById("copyButton");
+  const outputTypeRadioButtons = document.getElementsByName("outputTypeRadioButtons");
+
+  var layoutSectionExpanded = false;
+  var filterSectionExpanded = false;
+  var keysSectionExpanded = true;
+  var sortAlphabetically = sortAlphabeticallyCheckbox.checked;
+  var hideRootDeclaration = hideRootDeclarationCheckbox.checked;
+  var hideNonAlphabetic = hideNonAlphabeticCheckbox.checked;
+  var hideDuplicates = hideDuplicatesCheckbox.checked;
+  var useFrameName = useFrameNameCheckbox.checked;
+  var indentation = indentationTextField.value;
+  var prefix = prefixTextField.value;
+  var suffixWordCount = suffixTextField.value;
+  var customOutput = customOutputTextField.value;
+  var outputType = Array.from(outputTypeRadioButtons).find((radioButton) => radioButton.checked).value;
+
+  var figmaNodeObjects = [];
+
+  onmessage = (event) => {
+    figmaNodeObjects = event.data.pluginMessage ? event.data.pluginMessage : [];
+    updateOutput();
+  };
+
+  onLayoutSectionToggled = () => {
+    layoutSectionExpanded = !layoutSectionExpanded;
+    updateSections()
+  };
+
+  onFilterSectionToggled = () => {
+    filterSectionExpanded = !filterSectionExpanded;
+    updateSections()
+  };
+
+  onKeysSectionToggled = () => {
+    keysSectionExpanded = !keysSectionExpanded;
+    updateSections()
+  };
+
+  onSortAlphabeticallyChange = () => {
+    sortAlphabetically = sortAlphabeticallyCheckbox.checked;
+    updateOutput();
+  };
+
+  onHideRootDeclarationChange = () => {
+    hideRootDeclaration = hideRootDeclarationCheckbox.checked;
+    updateOutput();
+  };
+
+  onHideNonAlphabeticChange = () => {
+    hideNonAlphabetic = hideNonAlphabeticCheckbox.checked;
+    updateOutput();
+  };
+
+  onHideDuplicatesChange = () => {
+    hideDuplicates = hideDuplicatesCheckbox.checked;
+    updateOutput();
+  };
+
+  onOutputTypeChange = () => {
+    outputType = Array.from(outputTypeRadioButtons).find((radioButton) => radioButton.checked).value;
+    updateOutput();
+    updateSections();
+  };
+
+  onCustomOutputChange = () => {
+    customOutput = customOutputTextField.value;
+    onOutputTypeChange();
+  };
+
+  onUseFrameNameChange = () => {
+    useFrameName = useFrameNameCheckbox.checked;
+    updateOutput();
+  };
+
+  onPrefixChange = () => {
+    prefixTextField.value = sanitizeStringKeyInput(prefixTextField.value);
+    prefix = prefixTextField.value;
+    updateOutput();
+  };
+
+  onSuffixChange = () => {
+    suffixTextField.value = sanitizeIntegerInput(suffixTextField.value);
+    suffixWordCount = suffixTextField.value;
+    updateOutput();
+  };
+
+  onIndentationChange = () => {
+    indentationTextField.value = sanitizeIntegerInput(indentationTextField.value);
+    indentation = indentationTextField.value;
+    updateOutput();
+  };
+
+  onCopyClick = () => {
+    outputTextArea.select();
+    document.execCommand("copy");
+  };
+
+  const OutputType = {
+    Json: "json",
+    Xml: "xml",
+    Strings: "strings",
+    Properties: "properties",
+    Custom: "custom"
+  };
+
+  updateSections();
+
+  Object.defineProperty(Array.prototype, "safeSlice", {
+    value: function safeSlice(start, end) {
+      const length = this.length;
+      const safeStart = Math.max(0, Math.min(start ? start : 0, length));
+      const safeEnd = Math.max(0, Math.min(end ? end : length, length));
+      return this.slice(safeStart, safeEnd);
+    },
+    writable: true,
+    configurable: true,
+  });
+
+  function updateSections() {
+    layoutSectionButton.innerText = layoutSectionExpanded ? "˄" : "˅";
+    layoutSection.style.display = layoutSectionExpanded ? "block" : "none";
+
+    filterSectionButton.innerText = filterSectionExpanded ? "˄" : "˅";
+    filterSection.style.display = filterSectionExpanded ? "block" : "none";
+
+    keysSectionButton.innerText = keysSectionExpanded ? "˄" : "˅";
+    keysSection.style.display = keysSectionExpanded ? "block" : "none";
+
+    customOutputSection.style.display = outputType === OutputType.Custom ? "block" : "none";
+  }
+
+  function updateOutput() {
+    outputTextArea.value = generateOutput();
+  }
+
+  function generateOutput() {
+    var outputLines = figmaNodeObjects
+    if (hideDuplicates) outputLines = [...new Set(figmaNodeObjects)];
+    if (hideNonAlphabetic) outputLines = outputLines.filter((object) => /[a-zA-Z]/.test(object.characters));
+    outputLines = outputLines.map((object) => generateOutputLine(object.characters, useFrameName ? sanitizeStringKeyInput(object.frameName) + prefix : prefix));
+    if (sortAlphabetically) outputLines = outputLines.sort();
+    if (indentation && indentation > 0) outputLines = outputLines.map((line) => " ".repeat(indentation) + line);
+    outputLines = outputLines.join("\n");
+    if (outputType === OutputType.Json) outputLines = outputLines.replace(/,$/, "");
+    if (!hideRootDeclaration) {
+      switch (outputType) {
+        case OutputType.Json:
+          outputLines = `{\n${outputLines}\n}`;
+          break;
+        case OutputType.Xml:
+          outputLines = `<resources>\n${outputLines}\n</resources>`;
+          break;
+        case OutputType.Strings:
+          outputLines = `/* \n  Localizable.strings\n */\n${outputLines}`;
+          break;
+        default:
+          break;
+      }
+    }
+    return outputLines;
+  }
+
+  function generateOutputLine(string, prefix) {
+    const key = generateStringKey(string, prefix, suffixWordCount);
+    const value = string;
+    return generateKeyValuePair(key, value);
+  }
+
+  function generateStringKey(string, prefix, suffixWordCount) {
+    return (
+      prefix +
+      string
+        .replace(/[^\w\s]/g, "")
+        .trim()
+        .split(/\s+/)
+        .safeSlice(0, suffixWordCount)
+        .join("_")
+        .toLowerCase()
+    );
+  }
+
+  function generateKeyValuePair(key, value) {
+    switch (outputType) {
+      case OutputType.Json:
+        return generateJsonKeyValuePair(key, value);
+      case OutputType.Xml:
+        return generateXmlKeyValuePair(key, value);
+      case OutputType.Strings:
+        return generateStringsKeyValuePair(key, value);
+      case OutputType.Properties:
+        return generatePropertiesKeyValuePair(key, value);
+      case OutputType.Custom:
+        return generateCustomKeyValuePair(key, value);
+      default:
+        return "";
+    }
+  }
+
+  function generateJsonKeyValuePair(key, value) {
+    return `"${key}": "${escapeJson(value)}",`;
+  }
+
+  function generateXmlKeyValuePair(key, value) {
+    return `<string name="${key}">${escapeXml(value)}</string>`;
+  }
+
+  function generateStringsKeyValuePair(key, value) {
+    return `"${key}" = "${escapeJson(value)}";`;
+  }
+
+  function generatePropertiesKeyValuePair(key, value) {
+    return `${key}=${escapeProperties(value)}`;
+  }
+
+  function generateCustomKeyValuePair(key, value) {
+    return customOutput
+      .replace("%key%", key)
+      .replace("%value%", escapeCustomOutput(value));
+  }
+
+  function sanitizeIntegerInput(input) {
+    return input.replace(/[^\d]/g, "");
+  }
+
+  function sanitizeStringKeyInput(input) {
+    return input.replace(/\W/g, "");
+  }
+
+  function escapeXml(string) {
+    return string
+      .replace(/\\/g, `\\\\`)
+      .replace(/</g, `\\<`)
+      .replace(/>/g, `\\>`)
+      .replace(/&/g, `\\&`)
+      .replace(/'/g, `\\'`)
+      .replace(/"/g, `\\"`)
+      .replace(/\n/g, `\\n`)
+      .replace(/\r/g, `\\r`)
+      .replace(/\t/g, `\\t`);
+  }
+
+  function escapeJson(string) {
+    return string
+      .replace(/\\/g, `\\\\`)
+      .replace(/"/g, `\\"`)
+      .replace(/\n/g, `\\n`)
+      .replace(/\r/g, `\\r`)
+      .replace(/\t/g, `\\t`);
+  }
+
+  function escapeProperties(string) {
+    return string
+      .replace(/\\/g, `\\\\`)
+      .replace(/:/g, `\\:`)
+      .replace(/=/g, `\\=`)
+      .replace(/#/g, `\\#`)
+      .replace(/^ /g, `\\ `)
+      .replace(/\n/g, `\\n`)
+      .replace(/\r/g, `\\r`)
+      .replace(/\t/g, `\\t`);
+  }
+
+  function escapeCustomOutput(string) {
+    return string
+      .replace(/\n/g, `\\n`)
+      .replace(/\r/g, `\\r`)
+      .replace(/\t/g, `\\t`);
+  }
+</script>
