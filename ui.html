@@ -313,6 +313,14 @@
     configurable: true,
   });
 
+  Object.defineProperty(String.prototype, "appendIfNeeded", {
+    value: function appendIfNeeded(suffix) {
+      return this.length == 0 || this.endsWith(suffix) ? this : this + suffix;
+    },
+    writable: true,
+    configurable: true,
+  });
+
   function updateSections() {
     layoutSectionButton.innerText = layoutSectionExpanded ? "˄" : "˅";
     layoutSection.style.display = layoutSectionExpanded ? "block" : "none";
@@ -334,7 +342,7 @@
     var outputLines = figmaNodeObjects
     if (hideDuplicates) outputLines = [...new Set(figmaNodeObjects)];
     if (hideNonAlphabetic) outputLines = outputLines.filter((object) => /[a-zA-Z]/.test(object.characters));
-    outputLines = outputLines.map((object) => generateOutputLine(object.characters, useFrameName ? sanitizeStringKeyInput(object.frameName) + prefix : prefix));
+    outputLines = outputLines.map((object) => generateOutputLine(object.characters, useFrameName ? sanitizeStringKeyInput(object.frameName).appendIfNeeded("_") + prefix.appendIfNeeded("_") : prefix.appendIfNeeded("_")));
     if (sortAlphabetically) outputLines = outputLines.sort();
     if (indentation && indentation > 0) outputLines = outputLines.map((line) => " ".repeat(indentation) + line);
     outputLines = outputLines.join("\n");
@@ -420,15 +428,19 @@
   }
 
   function sanitizeStringKeyInput(input) {
-    return input.replace(/\W/g, "");
+    return input
+      .replace(/[- ]/g, "_")
+      .replace(/\W/g, "")
+      .toLowerCase();
   }
 
   function escapeXml(string) {
     return string
       .replace(/\\/g, `\\\\`)
-      .replace(/</g, `\\<`)
-      .replace(/>/g, `\\>`)
-      .replace(/&/g, `\\&`)
+      .replace(/\//g, `\\\/`)
+      .replace(/</g, `&lt;`)
+      .replace(/>/g, `&gt;`)
+      .replace(/&/g, `&amp;`)
       .replace(/'/g, `\\'`)
       .replace(/"/g, `\\"`)
       .replace(/\n/g, `\\n`)
@@ -439,6 +451,7 @@
   function escapeJson(string) {
     return string
       .replace(/\\/g, `\\\\`)
+      .replace(/\//g, `\\\/`)
       .replace(/"/g, `\\"`)
       .replace(/\n/g, `\\n`)
       .replace(/\r/g, `\\r`)
@@ -448,6 +461,7 @@
   function escapeProperties(string) {
     return string
       .replace(/\\/g, `\\\\`)
+      .replace(/\//g, `\\\/`)
       .replace(/:/g, `\\:`)
       .replace(/=/g, `\\=`)
       .replace(/#/g, `\\#`)
